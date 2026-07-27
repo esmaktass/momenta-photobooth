@@ -31,6 +31,7 @@
     </header>
 
 
+
     <!-- MAIN CONTENT -->
     <main>
 
@@ -58,6 +59,43 @@
             </div>
 
         </section>
+
+      <section class="camera-section">
+
+    <h2>Create Your Photo Strip</h2>
+
+    <p id="camera-status">
+
+        Kamerayı kullanmaya başlamak için butona bas.
+
+    </p>
+
+    <button id="start-camera">
+
+        Kamerayı Aç
+
+    </button>
+
+    <video
+        id="camera"
+        autoplay
+        playsinline
+    ></video>
+    <button id="capture-photo">
+    📸 Fotoğraf Çek
+</button>
+
+<canvas
+    id="photo-canvas"
+    style="display:none;"
+></canvas>
+
+<img
+    id="photo-preview"
+    alt="Photo Preview"
+/>
+
+</section>
 
 
         <!-- PREVIEW SECTION -->
@@ -150,6 +188,6 @@
         </a>
 
     </footer>
-
+<script src="script.js"></script>
 </body>
-</html>
+
