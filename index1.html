@@ -70,25 +70,53 @@
 
     </p>
 
-    <button id="start-camera">
+           <p id="photo-counter">
+            0 / 4 fotoğraf çekildi
+        </p>
+    </div>
 
-        Kamerayı Aç
+    <div class="camera-container">
+        <video
+            id="camera"
+            autoplay
+            playsinline
+        ></video>
+    </div>
 
-    </button>
+    <div class="camera-actions">
+        <button id="start-camera" type="button">
+            Kamerayı Aç
+        </button>
 
-    <video
-        id="camera"
-        autoplay
-        playsinline
-    ></video>
-    <button id="capture-photo">
-    📸 Fotoğraf Çek
-</button>
+        <button id="capture-photo" type="button" disabled>
+            Fotoğraf Çek
+        </button>
 
-<canvas
-    id="photo-canvas"
-    style="display:none;"
-></canvas>
+        <button id="reset-session" type="button" disabled>
+            Baştan Başla
+        </button>
+    </div>
+
+    <div
+        id="photo-gallery"
+        class="photo-gallery"
+        aria-label="Çekilen fotoğraflar"
+    ></div>
+
+    <section
+        id="strip-result"
+        class="strip-result"
+        hidden
+    >
+        <h3>Your Photo Strip</h3>
+
+        <canvas id="strip-canvas"></canvas>
+    </section>
+
+    <canvas
+        id="photo-canvas"
+        hidden
+    ></canvas>
 
 <img
     id="photo-preview"
