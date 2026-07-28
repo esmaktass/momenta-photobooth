@@ -1,5 +1,4 @@
-alert("JavaScript çalışıyor");
-console.log("script.js yüklendi");const MAX_PHOTOS = 4;
+const MAX_PHOTOS = 4;
 
 const startButton = document.getElementById("start-camera");
 const captureButton = document.getElementById("capture-photo");
@@ -382,14 +381,10 @@ resetButton.addEventListener("click", resetSession);
 
 const countdownOverlay = document.getElementById("countdown-overlay");
 const countdownNumber = document.getElementById("countdown-number");
-const captureButton = document.getElementById("capture-photo");
 console.log("Capture butonu:", captureButton);
 
 async function startCountdown() {
 console.log("Geri sayım başladı");
-captureButton.addEventListener(
-    "click",
-    startCountdown
 );
     captureButton.disabled = true;
     countdownOverlay.hidden = false;
