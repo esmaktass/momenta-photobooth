@@ -385,7 +385,7 @@ console.log("Capture butonu:", captureButton);
 
 async function startCountdown() {
 console.log("Geri sayım başladı");
-);
+
     captureButton.disabled = true;
     countdownOverlay.hidden = false;
 
