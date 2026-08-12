@@ -17,8 +17,8 @@ Technologies
 -MediaDevices API
 
 Future Plans
--AI Filters
--Face Detection
+AI Filters
+Face Detection
 -QR Download
 -Cloud Storage
 -User Accounts

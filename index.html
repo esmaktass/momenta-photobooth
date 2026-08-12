@@ -10,7 +10,9 @@
 
     <title>Momenta</title>
 
-    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="./style.css">
+
+    <script src="./script.js" defer></script>
 </head>
 
 <body>
@@ -18,18 +20,17 @@
     <!-- HEADER -->
     <header class="header">
 
-        <a href="#" class="logo">
+        <a href="#home" class="logo">
             Momenta
         </a>
 
         <nav class="navigation">
             <a href="#home">Home</a>
-            <a href="#preview">Create</a>
+            <a href="#camera-section">Create</a>
             <a href="#about">About</a>
         </nav>
 
     </header>
-
 
 
     <!-- MAIN CONTENT -->
@@ -52,7 +53,10 @@
                     Turn moments into memories.
                 </p>
 
-                <a href="#preview" class="primary-button">
+                <a
+                    href="#camera-section"
+                    class="primary-button"
+                >
                     Start Creating
                 </a>
 
@@ -60,74 +64,108 @@
 
         </section>
 
-      <section class="camera-section">
 
-    <h2>Create Your Photo Strip</h2>
+        <!-- CAMERA SECTION -->
+        <section
+            class="camera-section"
+            id="camera-section"
+        >
 
-    <p id="camera-status">
+            <div class="camera-header">
 
-        Kamerayı kullanmaya başlamak için butona bas.
+                <p class="section-label">
+                    Momenta Photobooth
+                </p>
 
-    </p>
+                <h2>
+                    Create Your Photo Strip
+                </h2>
 
-           <p id="photo-counter">
-            0 / 4 fotoğraf çekildi
-        </p>
-    </div>
+                <p id="camera-status">
+                    Fotoğraf çekmeye başlamak için kameranı aç.
+                </p>
 
-    <div class="camera-container">
-        <video
-            id="camera"
-            autoplay
-            playsinline
-        ></video>
-    </div>
+                <p id="photo-counter">
+                    0 / 4 fotoğraf çekildi
+                </p>
 
-    <div class="camera-actions">
-        <button id="start-camera" type="button">
-            Kamerayı Aç
-        </button>
+            </div>
 
-        <button id="capture-photo" type="button" disabled>
-            Fotoğraf Çek
-        </button>
 
-        <button id="reset-session" type="button" disabled>
-            Baştan Başla
-        </button>
-    </div>
+            <div class="camera-container">
 
-    <div
-        id="photo-gallery"
-        class="photo-gallery"
-        aria-label="Çekilen fotoğraflar"
-    ></div>
+                <video
+                    id="camera"
+                    autoplay
+                    playsinline
+                ></video>
 
-    <section
-        id="strip-result"
-        class="strip-result"
-        hidden
-    >
-        <h3>Your Photo Strip</h3>
+            </div>
 
-        <canvas id="strip-canvas"></canvas>
-    </section>
 
-    <canvas
-        id="photo-canvas"
-        hidden
-    ></canvas>
+            <div class="camera-actions">
 
-<img
-    id="photo-preview"
-    alt="Photo Preview"
-/>
+                <button
+                    id="start-camera"
+                    type="button"
+                >
+                    Kamerayı Aç
+                </button>
 
-</section>
+                <button
+                    id="capture-photo"
+                    type="button"
+                    disabled
+                >
+                    Fotoğraf Çek
+                </button>
+
+                <button
+                    id="reset-session"
+                    type="button"
+                    disabled
+                >
+                    Baştan Başla
+                </button>
+
+            </div>
+
+
+            <div
+                id="photo-gallery"
+                class="photo-gallery"
+                aria-label="Çekilen fotoğraflar"
+            ></div>
+
+
+            <section
+                id="strip-result"
+                class="strip-result"
+                hidden
+            >
+
+                <h3>
+                    Your Photo Strip
+                </h3>
+
+                <canvas id="strip-canvas"></canvas>
+
+            </section>
+
+
+            <canvas
+                id="photo-canvas"
+                hidden
+            ></canvas>
+
+        </section>
 
 
         <!-- PREVIEW SECTION -->
-        <section class="preview-section" id="preview">
+        <section
+            class="preview-section"
+            id="preview"
+        >
 
             <div class="section-heading">
 
@@ -175,7 +213,10 @@
 
 
         <!-- ABOUT SECTION -->
-        <section class="about-section" id="about">
+        <section
+            class="about-section"
+            id="about"
+        >
 
             <div class="about-content">
 
@@ -188,9 +229,10 @@
                 </h2>
 
                 <p>
-                    Momenta is a web application that will allow
-                    users to take or upload photos, choose a frame
-                    and download their own photo strip.
+                    Momenta is a web application that allows
+                    users to capture photos, generate a photo
+                    strip and create digital memories directly
+                    in the browser.
                 </p>
 
             </div>
@@ -216,6 +258,6 @@
         </a>
 
     </footer>
-<script src="script.js"></script>
-</body>
 
+</body>
+</html>
