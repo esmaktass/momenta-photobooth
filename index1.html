@@ -1,54 +1,156 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-    <title>Momento</title>
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    <title>Momenta</title>
 
     <link rel="stylesheet" href="style.css">
 </head>
 
 <body>
 
-    <header>
+    <!-- HEADER -->
+    <header class="header">
 
-        <h1>Momento</h1>
+        <a href="#" class="logo">
+            Momenta
+        </a>
 
-        <nav>
-            <a href="#">Home</a>
-            <a href="#">Create</a>
-            <a href="#">About</a>
+        <nav class="navigation">
+            <a href="#home">Home</a>
+            <a href="#preview">Create</a>
+            <a href="#about">About</a>
         </nav>
 
     </header>
 
 
+    <!-- MAIN CONTENT -->
     <main>
 
-        <section class="hero">
+        <!-- HERO SECTION -->
+        <section class="hero" id="home">
 
-            <h2>Create memories in strips.</h2>
+            <div class="hero-content">
 
-            <p>
-                Turn your favorite photos into beautiful digital photostrips.
-            </p>
+                <p class="hero-label">
+                    Digital Photobooth
+                </p>
 
-            <button>Start Creating</button>
+                <h1>
+                    Create memories in strips.
+                </h1>
+
+                <p class="hero-description">
+                    Turn your favorite moments into beautiful
+                    and customizable digital photostrips.
+                </p>
+
+                <a href="#preview" class="primary-button">
+                    Start Creating
+                </a>
+
+            </div>
+
+        </section>
+
+
+        <!-- PREVIEW SECTION -->
+        <section class="preview-section" id="preview">
+
+            <div class="section-heading">
+
+                <p class="section-label">
+                    Preview
+                </p>
+
+                <h2>
+                    Your first photo strip
+                </h2>
+
+                <p>
+                    This is a temporary preview. Later, these
+                    boxes will contain real photos.
+                </p>
+
+            </div>
+
+
+            <div class="photo-strip">
+
+                <div class="photo-placeholder">
+                    <span>Photo 1</span>
+                </div>
+
+                <div class="photo-placeholder">
+                    <span>Photo 2</span>
+                </div>
+
+                <div class="photo-placeholder">
+                    <span>Photo 3</span>
+                </div>
+
+                <p class="photo-strip-title">
+                    MOMENTA
+                </p>
+
+                <p class="photo-strip-date">
+                    20.07.2026
+                </p>
+
+            </div>
+
+        </section>
+
+
+        <!-- ABOUT SECTION -->
+        <section class="about-section" id="about">
+
+            <div class="about-content">
+
+                <p class="section-label">
+                    About the project
+                </p>
+
+                <h2>
+                    A simple digital photobooth experience.
+                </h2>
+
+                <p>
+                    Momenta is a web application that will allow
+                    users to take or upload photos, choose a frame
+                    and download their own photo strip.
+                </p>
+
+            </div>
 
         </section>
 
     </main>
 
 
-    <footer>
+    <!-- FOOTER -->
+    <footer class="footer">
 
-        <p>© 2026 Momento</p>
+        <p>
+            © 2026 Momenta
+        </p>
+
+        <a
+            href="https://github.com/esmaktass/momenta-photobooth"
+            target="_blank"
+            rel="noopener noreferrer"
+        >
+            GitHub
+        </a>
 
     </footer>
 
 </body>
-
 </html>
-
