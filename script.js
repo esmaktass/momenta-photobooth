@@ -1,4 +1,5 @@
-const MAX_PHOTOS = 4;
+alert("JavaScript çalışıyor");
+console.log("script.js yüklendi");const MAX_PHOTOS = 4;
 
 const startButton = document.getElementById("start-camera");
 const captureButton = document.getElementById("capture-photo");
@@ -376,5 +377,39 @@ function resetSession() {
 
 
 startButton.addEventListener("click", startCamera);
-captureButton.addEventListener("click", capturePhoto);
+captureButton.addEventListener("click", startCountdown);
 resetButton.addEventListener("click", resetSession);
+
+const countdownOverlay = document.getElementById("countdown-overlay");
+const countdownNumber = document.getElementById("countdown-number");
+const captureButton = document.getElementById("capture-photo");
+console.log("Capture butonu:", captureButton);
+
+async function startCountdown() {
+console.log("Geri sayım başladı");
+captureButton.addEventListener(
+    "click",
+    startCountdown
+);
+    captureButton.disabled = true;
+    countdownOverlay.hidden = false;
+
+    for (let i = 3; i >= 1; i--) {
+
+        countdownNumber.textContent = i;
+
+        countdownNumber.style.animation = "none";
+        countdownNumber.offsetHeight; // Animasyonu yeniden başlatır.
+        countdownNumber.style.animation = "";
+
+        await new Promise(resolve => setTimeout(resolve, 1000));
+    }
+
+    countdownOverlay.hidden = true;
+
+    capturePhoto();
+
+    if (capturedPhotos.length < MAX_PHOTOS) {
+        captureButton.disabled = false;
+    }
+}
