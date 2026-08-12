@@ -1,96 +1,476 @@
+"use strict";
+
+
+/* ============================= */
+/* APPLICATION CONFIGURATION     */
+/* ============================= */
+
 const MAX_PHOTOS = 4;
+const COUNTDOWN_START = 3;
 
-const startButton = document.getElementById("start-camera");
-const captureButton = document.getElementById("capture-photo");
-const resetButton = document.getElementById("reset-session");
 
-const camera = document.getElementById("camera");
-const statusText = document.getElementById("camera-status");
-const photoCounter = document.getElementById("photo-counter");
+/* ============================= */
+/* DOM ELEMENTS                  */
+/* ============================= */
 
-const captureCanvas = document.getElementById("photo-canvas");
-const captureContext = captureCanvas.getContext("2d");
+const startButton =
+    document.getElementById("start-camera");
 
-const photoGallery = document.getElementById("photo-gallery");
+const captureButton =
+    document.getElementById("capture-photo");
 
-const stripResult = document.getElementById("strip-result");
-const stripCanvas = document.getElementById("strip-canvas");
-const stripContext = stripCanvas.getContext("2d");
+const resetButton =
+    document.getElementById("reset-session");
+
+const camera =
+    document.getElementById("camera");
+
+const statusText =
+    document.getElementById("camera-status");
+
+const photoCounter =
+    document.getElementById("photo-counter");
+
+const photoGallery =
+    document.getElementById("photo-gallery");
+
+const captureCanvas =
+    document.getElementById("photo-canvas");
+
+const stripResult =
+    document.getElementById("strip-result");
+
+const stripCanvas =
+    document.getElementById("strip-canvas");
+
+const countdownOverlay =
+    document.getElementById("countdown-overlay");
+
+const countdownNumber =
+    document.getElementById("countdown-number");
+
+
+/* ============================= */
+/* CANVAS CONTEXTS               */
+/* ============================= */
+
+const captureContext =
+    captureCanvas.getContext("2d");
+
+const stripContext =
+    stripCanvas.getContext("2d");
+
+
+/* ============================= */
+/* APPLICATION STATE             */
+/* ============================= */
 
 const capturedPhotos = [];
 
 let cameraStream = null;
+let isCountingDown = false;
 
+
+/* ============================= */
+/* STATUS MESSAGE                */
+/* ============================= */
 
 /**
- * Kullanıcının kamerasına erişir ve canlı görüntüyü başlatır.
+ * Kullanıcıya gösterilen durum mesajını günceller.
+ *
+ * @param {string} message
+ * @param {"default"|"success"|"error"} type
+ */
+function setStatus(message, type = "default") {
+    statusText.textContent = message;
+
+    statusText.classList.remove(
+        "success",
+        "error"
+    );
+
+    if (type === "success") {
+        statusText.classList.add("success");
+    }
+
+    if (type === "error") {
+        statusText.classList.add("error");
+    }
+}
+
+
+/* ============================= */
+/* CAMERA                        */
+/* ============================= */
+
+/**
+ * Kullanıcının kamerasına erişir.
  */
 async function startCamera() {
-    statusText.textContent = "Kamera açılıyor...";
+    if (
+        !navigator.mediaDevices ||
+        !navigator.mediaDevices.getUserMedia
+    ) {
+        setStatus(
+            "Tarayıcın kamera erişimini desteklemiyor.",
+            "error"
+        );
+
+        return;
+    }
+
+    setStatus("Kamera açılıyor...");
+
     startButton.disabled = true;
 
     try {
-        cameraStream = await navigator.mediaDevices.getUserMedia({
-            video: {
-                facingMode: "user"
-            },
-            audio: false
-        });
+        stopCameraStream();
+
+        cameraStream =
+            await navigator.mediaDevices.getUserMedia({
+                video: {
+                    facingMode: "user",
+                    width: {
+                        ideal: 1280
+                    },
+                    height: {
+                        ideal: 960
+                    }
+                },
+                audio: false
+            });
 
         camera.srcObject = cameraStream;
+
+        await waitForCamera();
+
         camera.style.display = "block";
+
+        startButton.textContent = "Kamera Açık";
+        startButton.disabled = true;
 
         captureButton.disabled = false;
         resetButton.disabled = false;
 
-        startButton.textContent = "Kamera Açık";
-        statusText.textContent =
-            "Kamera hazır. İlk fotoğrafını çekebilirsin.";
+        setStatus(
+            "Kamera hazır. İlk fotoğrafını çekebilirsin.",
+            "success"
+        );
     } catch (error) {
-        console.error("Kamera açılamadı:", error);
+        console.error(
+            "Kamera açılamadı:",
+            error
+        );
+
+        cameraStream = null;
 
         startButton.disabled = false;
-        startButton.textContent = "Kamerayı Tekrar Dene";
-        statusText.textContent = getCameraErrorMessage(error);
+        startButton.textContent =
+            "Kamerayı Tekrar Dene";
+
+        captureButton.disabled = true;
+
+        setStatus(
+            getCameraErrorMessage(error),
+            "error"
+        );
     }
 }
 
 
 /**
- * Kamera hatasını kullanıcı dostu bir mesaja dönüştürür.
+ * Video görüntüsünün gerçekten hazır olmasını bekler.
+ *
+ * @returns {Promise<void>}
+ */
+function waitForCamera() {
+    return new Promise((resolve, reject) => {
+        if (
+            camera.readyState >= 2 &&
+            camera.videoWidth > 0
+        ) {
+            resolve();
+            return;
+        }
+
+        const timeoutId = setTimeout(() => {
+            reject(
+                new Error(
+                    "Kamera görüntüsü zamanında yüklenemedi."
+                )
+            );
+        }, 10000);
+
+        camera.addEventListener(
+            "loadedmetadata",
+            () => {
+                clearTimeout(timeoutId);
+
+                camera
+                    .play()
+                    .then(resolve)
+                    .catch(reject);
+            },
+            {
+                once: true
+            }
+        );
+    });
+}
+
+
+/**
+ * Aktif kamera akışını durdurur.
+ */
+function stopCameraStream() {
+    if (!cameraStream) {
+        return;
+    }
+
+    cameraStream
+        .getTracks()
+        .forEach((track) => {
+            track.stop();
+        });
+
+    cameraStream = null;
+    camera.srcObject = null;
+}
+
+
+/**
+ * Tarayıcı kamera hatalarını kullanıcı dostu
+ * mesajlara dönüştürür.
+ *
+ * @param {Error} error
+ * @returns {string}
  */
 function getCameraErrorMessage(error) {
-    if (error.name === "NotAllowedError") {
-        return "Kamera izni verilmedi. Tarayıcı ayarlarından kamera erişimine izin vermelisin.";
+    switch (error.name) {
+        case "NotAllowedError":
+            return (
+                "Kamera izni verilmedi. Tarayıcı " +
+                "ayarlarından kamera iznine izin vermelisin."
+            );
+
+        case "NotFoundError":
+            return (
+                "Bu cihazda kullanılabilir bir kamera " +
+                "bulunamadı."
+            );
+
+        case "NotReadableError":
+            return (
+                "Kamera başka bir uygulama tarafından " +
+                "kullanılıyor olabilir."
+            );
+
+        case "OverconstrainedError":
+            return (
+                "Kamera istenen görüntü ayarlarını " +
+                "desteklemiyor."
+            );
+
+        case "SecurityError":
+            return (
+                "Tarayıcı güvenlik ayarları kamera " +
+                "erişimini engelledi."
+            );
+
+        default:
+            return (
+                "Kamera açılamadı. Kamera iznini ve " +
+                "tarayıcı ayarlarını kontrol et."
+            );
+    }
+}
+
+
+/* ============================= */
+/* COUNTDOWN                     */
+/* ============================= */
+
+/**
+ * Fotoğraf çekilmeden önce geri sayımı başlatır.
+ */
+async function startCountdown() {
+    if (isCountingDown) {
+        return;
     }
 
-    if (error.name === "NotFoundError") {
-        return "Bu cihazda kullanılabilir bir kamera bulunamadı.";
+    if (!cameraStream) {
+        setStatus(
+            "Fotoğraf çekmeden önce kamerayı açmalısın.",
+            "error"
+        );
+
+        return;
     }
 
-    if (error.name === "NotReadableError") {
-        return "Kamera başka bir uygulama tarafından kullanılıyor olabilir.";
+    if (capturedPhotos.length >= MAX_PHOTOS) {
+        setStatus(
+            "Bu oturumdaki tüm fotoğraflar çekildi."
+        );
+
+        return;
     }
 
-    return "Kamera açılamadı. Lütfen bağlantını ve kamera ayarlarını kontrol et.";
+    if (
+        camera.videoWidth === 0 ||
+        camera.videoHeight === 0
+    ) {
+        setStatus(
+            "Kamera henüz hazır değil. Birkaç saniye bekleyip tekrar dene.",
+            "error"
+        );
+
+        return;
+    }
+
+    isCountingDown = true;
+    captureButton.disabled = true;
+    countdownOverlay.hidden = false;
+
+    setStatus(
+        "Hazır ol! Fotoğraf çekiliyor..."
+    );
+
+    try {
+        for (
+            let number = COUNTDOWN_START;
+            number >= 1;
+            number -= 1
+        ) {
+            showCountdownNumber(number);
+
+            await delay(1000);
+        }
+
+        countdownOverlay.hidden = true;
+
+        capturePhoto();
+    } finally {
+        isCountingDown = false;
+        countdownOverlay.hidden = true;
+
+        if (
+            cameraStream &&
+            capturedPhotos.length < MAX_PHOTOS
+        ) {
+            captureButton.disabled = false;
+        }
+    }
 }
 
 
 /**
- * Kameradaki mevcut kareyi canvas üzerine çizer
- * ve PNG formatında döndürür.
+ * Geri sayım numarasını gösterir ve animasyonu
+ * yeniden başlatır.
+ *
+ * @param {number} number
+ */
+function showCountdownNumber(number) {
+    countdownNumber.textContent =
+        String(number);
+
+    countdownNumber.style.animation =
+        "none";
+
+    void countdownNumber.offsetWidth;
+
+    countdownNumber.style.animation = "";
+}
+
+
+/**
+ * Belirtilen süre kadar bekleyen Promise oluşturur.
+ *
+ * @param {number} milliseconds
+ * @returns {Promise<void>}
+ */
+function delay(milliseconds) {
+    return new Promise((resolve) => {
+        setTimeout(resolve, milliseconds);
+    });
+}
+
+
+/* ============================= */
+/* PHOTO CAPTURE                 */
+/* ============================= */
+
+/**
+ * Kameradaki mevcut görüntüyü fotoğraf olarak kaydeder.
+ */
+function capturePhoto() {
+    if (!cameraStream) {
+        setStatus(
+            "Kamera bağlantısı bulunamadı.",
+            "error"
+        );
+
+        return;
+    }
+
+    if (capturedPhotos.length >= MAX_PHOTOS) {
+        return;
+    }
+
+    const photoData =
+        captureCurrentFrame();
+
+    capturedPhotos.push(photoData);
+
+    renderPhotoThumbnail(
+        photoData,
+        capturedPhotos.length
+    );
+
+    updateSessionInterface();
+
+    if (
+        capturedPhotos.length === MAX_PHOTOS
+    ) {
+        captureButton.disabled = true;
+
+        setStatus(
+            "Tüm fotoğraflar çekildi. Photo strip hazırlanıyor..."
+        );
+
+        createPhotoStrip();
+    }
+}
+
+
+/**
+ * Kameradaki mevcut kareyi canvas üzerine çizer.
+ *
+ * Canlı kamera görüntüsü CSS ile aynalandığı için
+ * kaydedilen fotoğraf da canvas üzerinde aynalanır.
+ *
+ * @returns {string}
  */
 function captureCurrentFrame() {
-    captureCanvas.width = camera.videoWidth;
-    captureCanvas.height = camera.videoHeight;
+    captureCanvas.width =
+        camera.videoWidth;
+
+    captureCanvas.height =
+        camera.videoHeight;
+
+    captureContext.clearRect(
+        0,
+        0,
+        captureCanvas.width,
+        captureCanvas.height
+    );
 
     captureContext.save();
 
-    /*
-     * Canlı önizleme aynalı olduğu için fotoğrafı da
-     * yatay eksende çeviriyoruz.
-     */
-    captureContext.translate(captureCanvas.width, 0);
+    captureContext.translate(
+        captureCanvas.width,
+        0
+    );
+
     captureContext.scale(-1, 1);
 
     captureContext.drawImage(
@@ -103,100 +483,117 @@ function captureCurrentFrame() {
 
     captureContext.restore();
 
-    return captureCanvas.toDataURL("image/png");
+    return captureCanvas.toDataURL(
+        "image/png"
+    );
 }
 
 
-/**
- * Bir fotoğraf çeker ve oturuma ekler.
- */
-function capturePhoto() {
-    if (!cameraStream) {
-        statusText.textContent =
-            "Fotoğraf çekmeden önce kamerayı açmalısın.";
-        return;
-    }
-
-    if (camera.videoWidth === 0 || camera.videoHeight === 0) {
-        statusText.textContent =
-            "Kamera henüz hazır değil. Birkaç saniye bekleyip tekrar dene.";
-        return;
-    }
-
-    if (capturedPhotos.length >= MAX_PHOTOS) {
-        statusText.textContent =
-            "Bu oturum için gereken tüm fotoğraflar çekildi.";
-        return;
-    }
-
-    const photoData = captureCurrentFrame();
-
-    capturedPhotos.push(photoData);
-
-    renderPhotoThumbnail(photoData, capturedPhotos.length);
-    updateSessionInterface();
-
-    if (capturedPhotos.length === MAX_PHOTOS) {
-        captureButton.disabled = true;
-        statusText.textContent =
-            "Tüm fotoğraflar çekildi. Photo strip hazırlanıyor...";
-
-        createPhotoStrip();
-    }
-}
-
+/* ============================= */
+/* PHOTO GALLERY                 */
+/* ============================= */
 
 /**
- * Çekilen fotoğrafı küçük bir önizleme olarak gösterir.
+ * Çekilen fotoğrafı küçük önizleme olarak gösterir.
+ *
+ * @param {string} photoData
+ * @param {number} photoNumber
  */
-function renderPhotoThumbnail(photoData, photoNumber) {
-    const image = document.createElement("img");
+function renderPhotoThumbnail(
+    photoData,
+    photoNumber
+) {
+    const image =
+        document.createElement("img");
 
     image.src = photoData;
-    image.alt = `${photoNumber}. çekilen fotoğraf`;
-    image.classList.add("photo-thumbnail");
+
+    image.alt =
+        `${photoNumber}. çekilen fotoğraf`;
+
+    image.classList.add(
+        "photo-thumbnail"
+    );
 
     photoGallery.appendChild(image);
 }
 
 
 /**
- * Sayaç ve durum mesajını günceller.
+ * Sayaç ve kullanıcı mesajlarını günceller.
  */
 function updateSessionInterface() {
-    const photoCount = capturedPhotos.length;
-    const remainingPhotos = MAX_PHOTOS - photoCount;
+    const photoCount =
+        capturedPhotos.length;
+
+    const remainingPhotos =
+        MAX_PHOTOS - photoCount;
 
     photoCounter.textContent =
         `${photoCount} / ${MAX_PHOTOS} fotoğraf çekildi`;
 
-    if (remainingPhotos > 0) {
-        statusText.textContent =
-            `${photoCount}. fotoğraf kaydedildi. ` +
-            `${remainingPhotos} fotoğraf daha çekmelisin.`;
+    if (photoCount === 1) {
+        setStatus(
+            "İlk fotoğraf kaydedildi. 3 fotoğraf daha çekmelisin.",
+            "success"
+        );
+
+        return;
+    }
+
+    if (photoCount === 2) {
+        setStatus(
+            "Harika! Oturumun yarısını tamamladın. 2 fotoğraf kaldı.",
+            "success"
+        );
+
+        return;
+    }
+
+    if (photoCount === 3) {
+        setStatus(
+            "Son bir fotoğraf kaldı. Hazır olduğunda çekebilirsin.",
+            "success"
+        );
+
+        return;
+    }
+
+    if (remainingPhotos === 0) {
+        setStatus(
+            "Tüm fotoğraflar başarıyla çekildi.",
+            "success"
+        );
     }
 }
 
 
+/* ============================= */
+/* PHOTO STRIP                   */
+/* ============================= */
+
 /**
- * Dört fotoğrafı dikey bir photo strip hâline getirir.
+ * Çekilen dört fotoğrafı dikey photo strip hâline getirir.
  */
 async function createPhotoStrip() {
     try {
-        const images = await Promise.all(
-            capturedPhotos.map(loadImage)
-        );
+        const images =
+            await Promise.all(
+                capturedPhotos.map(loadImage)
+            );
 
         const stripWidth = 600;
         const photoHeight = 450;
 
         const outerPadding = 40;
         const gap = 24;
-        const titleAreaHeight = 100;
-        const footerAreaHeight = 90;
+
+        const titleAreaHeight = 120;
+        const footerAreaHeight = 100;
 
         stripCanvas.width =
-            stripWidth + outerPadding * 2;
+            stripWidth +
+            outerPadding * 2;
 
         stripCanvas.height =
             titleAreaHeight +
@@ -205,40 +602,13 @@ async function createPhotoStrip() {
             photoHeight * MAX_PHOTOS +
             gap * (MAX_PHOTOS - 1);
 
-        /*
-         * Strip arka planı.
-         */
-        stripContext.fillStyle = "#fffaf5";
-        stripContext.fillRect(
-            0,
-            0,
-            stripCanvas.width,
-            stripCanvas.height
-        );
+        drawStripBackground();
 
-        /*
-         * Üst başlık.
-         */
-        stripContext.fillStyle = "#1f1f1f";
-        stripContext.textAlign = "center";
-        stripContext.font = "bold 38px Arial";
-        stripContext.fillText(
-            "MOMENTA",
-            stripCanvas.width / 2,
-            65
-        );
+        drawStripHeader();
 
-        stripContext.font = "20px Arial";
-        stripContext.fillText(
-            "create memories in strips",
-            stripCanvas.width / 2,
-            95
-        );
-
-        /*
-         * Fotoğrafların başlangıç yüksekliği.
-         */
-        let currentY = titleAreaHeight + outerPadding;
+        let currentY =
+            titleAreaHeight +
+            outerPadding;
 
         images.forEach((image) => {
             drawImageCover(
@@ -250,63 +620,138 @@ async function createPhotoStrip() {
                 photoHeight
             );
 
-            currentY += photoHeight + gap;
+            currentY +=
+                photoHeight + gap;
         });
 
-        /*
-         * Alt bölüm.
-         */
-        stripContext.fillStyle = "#1f1f1f";
-        stripContext.font = "18px Arial";
-        stripContext.fillText(
-            new Date().toLocaleDateString("tr-TR"),
-            stripCanvas.width / 2,
-            stripCanvas.height - 45
-        );
+        drawStripFooter();
 
         stripResult.hidden = false;
 
-        statusText.textContent =
-            "Photo strip başarıyla oluşturuldu.";
+        setStatus(
+            "Photo strip başarıyla oluşturuldu.",
+            "success"
+        );
 
         stripResult.scrollIntoView({
             behavior: "smooth",
             block: "start"
         });
     } catch (error) {
-        console.error("Photo strip oluşturulamadı:", error);
+        console.error(
+            "Photo strip oluşturulamadı:",
+            error
+        );
 
-        statusText.textContent =
-            "Photo strip oluşturulurken bir hata oluştu.";
+        setStatus(
+            "Photo strip oluşturulurken bir hata oluştu.",
+            "error"
+        );
     }
 }
 
 
 /**
- * Base64 fotoğraf verisini kullanılabilir Image nesnesine çevirir.
+ * Photo strip arka planını çizer.
  */
-function loadImage(source) {
-    return new Promise((resolve, reject) => {
-        const image = new Image();
+function drawStripBackground() {
+    stripContext.fillStyle =
+        "#fcf5e5";
 
-        image.onload = function () {
-            resolve(image);
-        };
-
-        image.onerror = function () {
-            reject(
-                new Error("Fotoğraf yüklenemedi.")
-            );
-        };
-
-        image.src = source;
-    });
+    stripContext.fillRect(
+        0,
+        0,
+        stripCanvas.width,
+        stripCanvas.height
+    );
 }
 
 
 /**
- * Görüntüyü oranını bozmadan belirtilen alanı tamamen
- * kaplayacak şekilde canvas üzerine çizer.
+ * Photo strip üst başlığını çizer.
+ */
+function drawStripHeader() {
+    stripContext.fillStyle =
+        "#810b38";
+
+    stripContext.textAlign =
+        "center";
+
+    stripContext.font =
+        "bold 40px Arial";
+
+    stripContext.fillText(
+        "MOMENTA",
+        stripCanvas.width / 2,
+        65
+    );
+
+    stripContext.font =
+        "20px Arial";
+
+    stripContext.fillText(
+        "create memories in strips",
+        stripCanvas.width / 2,
+        96
+    );
+}
+
+
+/**
+ * Photo strip alt kısmını çizer.
+ */
+function drawStripFooter() {
+    stripContext.fillStyle =
+        "#810b38";
+
+    stripContext.textAlign =
+        "center";
+
+    stripContext.font =
+        "18px Arial";
+
+    stripContext.fillText(
+        new Date().toLocaleDateString(
+            "tr-TR"
+        ),
+        stripCanvas.width / 2,
+        stripCanvas.height - 50
+    );
+}
+
+
+/**
+ * Base64 fotoğraf verisini Image nesnesine dönüştürür.
+ *
+ * @param {string} source
+ * @returns {Promise<HTMLImageElement>}
+ */
+function loadImage(source) {
+    return new Promise(
+        (resolve, reject) => {
+            const image = new Image();
+
+            image.onload = () => {
+                resolve(image);
+            };
+
+            image.onerror = () => {
+                reject(
+                    new Error(
+                        "Fotoğraf yüklenemedi."
+                    )
+                );
+            };
+
+            image.src = source;
+        }
+    );
+}
+
+
+/**
+ * Görüntüyü oranını bozmadan hedef alanı tamamen
+ * dolduracak şekilde canvas üzerine çizer.
  */
 function drawImageCover(
     context,
@@ -316,21 +761,38 @@ function drawImageCover(
     destinationWidth,
     destinationHeight
 ) {
-    const imageRatio = image.width / image.height;
+    const imageRatio =
+        image.width / image.height;
+
     const destinationRatio =
-        destinationWidth / destinationHeight;
+        destinationWidth /
+        destinationHeight;
 
     let sourceX = 0;
     let sourceY = 0;
-    let sourceWidth = image.width;
-    let sourceHeight = image.height;
 
-    if (imageRatio > destinationRatio) {
-        sourceWidth = image.height * destinationRatio;
-        sourceX = (image.width - sourceWidth) / 2;
+    let sourceWidth =
+        image.width;
+
+    let sourceHeight =
+        image.height;
+
+    if (
+        imageRatio > destinationRatio
+    ) {
+        sourceWidth =
+            image.height *
+            destinationRatio;
+
+        sourceX =
+            (image.width - sourceWidth) / 2;
     } else {
-        sourceHeight = image.width / destinationRatio;
-        sourceY = (image.height - sourceHeight) / 2;
+        sourceHeight =
+            image.width /
+            destinationRatio;
+
+        sourceY =
+            (image.height - sourceHeight) / 2;
     }
 
     context.drawImage(
@@ -347,8 +809,15 @@ function drawImageCover(
 }
 
 
+/* ============================= */
+/* RESET SESSION                 */
+/* ============================= */
+
 /**
- * Çekim oturumunu sıfırlar.
+ * Fotoğraf oturumunu sıfırlar.
+ *
+ * Kamera açıksa açık kalır; yalnızca çekilen
+ * fotoğraflar ve oluşturulan strip temizlenir.
  */
 function resetSession() {
     capturedPhotos.length = 0;
@@ -367,44 +836,57 @@ function resetSession() {
     photoCounter.textContent =
         `0 / ${MAX_PHOTOS} fotoğraf çekildi`;
 
-    captureButton.disabled = !cameraStream;
-
-    statusText.textContent = cameraStream
-        ? "Yeni oturum hazır. İlk fotoğrafını çekebilirsin."
-        : "Fotoğraf çekmeye başlamak için kameranı aç.";
-}
-
-
-startButton.addEventListener("click", startCamera);
-captureButton.addEventListener("click", startCountdown);
-resetButton.addEventListener("click", resetSession);
-
-const countdownOverlay = document.getElementById("countdown-overlay");
-const countdownNumber = document.getElementById("countdown-number");
-console.log("Capture butonu:", captureButton);
-
-async function startCountdown() {
-console.log("Geri sayım başladı");
-
-    captureButton.disabled = true;
-    countdownOverlay.hidden = false;
-
-    for (let i = 3; i >= 1; i--) {
-
-        countdownNumber.textContent = i;
-
-        countdownNumber.style.animation = "none";
-        countdownNumber.offsetHeight; // Animasyonu yeniden başlatır.
-        countdownNumber.style.animation = "";
-
-        await new Promise(resolve => setTimeout(resolve, 1000));
-    }
-
     countdownOverlay.hidden = true;
 
-    capturePhoto();
+    isCountingDown = false;
 
-    if (capturedPhotos.length < MAX_PHOTOS) {
-        captureButton.disabled = false;
+    resetButton.disabled =
+        !cameraStream;
+
+    captureButton.disabled =
+        !cameraStream;
+
+    if (cameraStream) {
+        setStatus(
+            "Yeni oturum hazır. İlk fotoğrafını çekebilirsin.",
+            "success"
+        );
+    } else {
+        setStatus(
+            "Fotoğraf çekmeye başlamak için kameranı aç."
+        );
     }
 }
+
+
+/* ============================= */
+/* EVENT LISTENERS               */
+/* ============================= */
+
+startButton.addEventListener(
+    "click",
+    startCamera
+);
+
+captureButton.addEventListener(
+    "click",
+    startCountdown
+);
+
+resetButton.addEventListener(
+    "click",
+    resetSession
+);
+
+
+/* ============================= */
+/* PAGE CLEANUP                  */
+/* ============================= */
+
+/**
+ * Kullanıcı sayfadan ayrıldığında kamerayı kapatır.
+ */
+window.addEventListener(
+    "beforeunload",
+    stopCameraStream
+);

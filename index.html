@@ -8,7 +8,12 @@
         content="width=device-width, initial-scale=1.0"
     >
 
-    <title>Momenta</title>
+    <meta
+        name="description"
+        content="Create digital photo strips directly in your browser with Momenta."
+    >
+
+    <title>Momenta | Digital Photobooth</title>
 
     <link rel="stylesheet" href="./style.css">
 
@@ -19,17 +24,15 @@
 
     <!-- HEADER -->
     <header class="header">
-
         <a href="#home" class="logo">
             Momenta
         </a>
 
-        <nav class="navigation">
+        <nav class="navigation" aria-label="Main navigation">
             <a href="#home">Home</a>
             <a href="#camera-section">Create</a>
             <a href="#about">About</a>
         </nav>
-
     </header>
 
 
@@ -38,7 +41,6 @@
 
         <!-- HERO SECTION -->
         <section class="hero" id="home">
-
             <div class="hero-content">
 
                 <p class="hero-label">
@@ -50,7 +52,8 @@
                 </h1>
 
                 <p class="hero-description">
-                    Turn moments into memories.
+                    Capture four moments and turn them into a
+                    digital photo strip directly in your browser.
                 </p>
 
                 <a
@@ -61,7 +64,6 @@
                 </a>
 
             </div>
-
         </section>
 
 
@@ -70,7 +72,6 @@
             class="camera-section"
             id="camera-section"
         >
-
             <div class="camera-header">
 
                 <p class="section-label">
@@ -81,7 +82,11 @@
                     Create Your Photo Strip
                 </h2>
 
-                <p id="camera-status">
+                <p
+                    id="camera-status"
+                    class="status-message"
+                    aria-live="polite"
+                >
                     Fotoğraf çekmeye başlamak için kameranı aç.
                 </p>
 
@@ -92,22 +97,36 @@
             </div>
 
 
+            <!-- CAMERA PREVIEW -->
             <div class="camera-container">
 
                 <video
                     id="camera"
                     autoplay
+                    muted
                     playsinline
                 ></video>
+
+                <!-- COUNTDOWN -->
+                <div
+                    id="countdown-overlay"
+                    class="countdown-overlay"
+                    hidden
+                    aria-live="assertive"
+                >
+                    <span id="countdown-number">3</span>
+                </div>
 
             </div>
 
 
+            <!-- CAMERA BUTTONS -->
             <div class="camera-actions">
 
                 <button
                     id="start-camera"
                     type="button"
+                    class="action-button primary-action"
                 >
                     Kamerayı Aç
                 </button>
@@ -115,6 +134,7 @@
                 <button
                     id="capture-photo"
                     type="button"
+                    class="action-button"
                     disabled
                 >
                     Fotoğraf Çek
@@ -123,6 +143,7 @@
                 <button
                     id="reset-session"
                     type="button"
+                    class="action-button secondary-action"
                     disabled
                 >
                     Baştan Başla
@@ -131,6 +152,7 @@
             </div>
 
 
+            <!-- CAPTURED PHOTOS -->
             <div
                 id="photo-gallery"
                 class="photo-gallery"
@@ -138,21 +160,21 @@
             ></div>
 
 
+            <!-- GENERATED PHOTO STRIP -->
             <section
                 id="strip-result"
                 class="strip-result"
                 hidden
             >
-
                 <h3>
                     Your Photo Strip
                 </h3>
 
                 <canvas id="strip-canvas"></canvas>
-
             </section>
 
 
+            <!-- HIDDEN CAPTURE CANVAS -->
             <canvas
                 id="photo-canvas"
                 hidden
@@ -166,49 +188,51 @@
             class="preview-section"
             id="preview"
         >
-
             <div class="section-heading">
 
                 <p class="section-label">
-                    Preview
+                    How it works
                 </p>
 
                 <h2>
-                    Your first photo strip
+                    Four photos, one memory.
                 </h2>
 
                 <p>
-                    This is a temporary preview. Later, these
-                    boxes will contain real photos.
+                    Open your camera, capture four photos and let
+                    Momenta automatically create your photo strip.
                 </p>
 
             </div>
 
 
-            <div class="photo-strip">
+            <div class="example-strip">
 
-                <div class="photo-placeholder">
+                <div class="example-photo">
                     <span>Photo 1</span>
                 </div>
 
-                <div class="photo-placeholder">
+                <div class="example-photo">
                     <span>Photo 2</span>
                 </div>
 
-                <div class="photo-placeholder">
+                <div class="example-photo">
                     <span>Photo 3</span>
                 </div>
 
-                <p class="photo-strip-title">
+                <div class="example-photo">
+                    <span>Photo 4</span>
+                </div>
+
+                <p class="example-strip-title">
                     MOMENTA
                 </p>
 
-                <p class="photo-strip-date">
-                    20.07.2026
+                <p class="example-strip-date">
+                    CREATE MEMORIES
                 </p>
 
             </div>
-
         </section>
 
 
@@ -217,7 +241,6 @@
             class="about-section"
             id="about"
         >
-
             <div class="about-content">
 
                 <p class="section-label">
@@ -229,14 +252,13 @@
                 </h2>
 
                 <p>
-                    Momenta is a web application that allows
-                    users to capture photos, generate a photo
-                    strip and create digital memories directly
-                    in the browser.
+                    Momenta is a browser-based photobooth that
+                    allows users to capture photos and generate a
+                    digital photo strip without installing an
+                    application.
                 </p>
 
             </div>
-
         </section>
 
     </main>
