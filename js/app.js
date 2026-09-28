@@ -36,6 +36,7 @@ import {
     showStripResult,
     updatePhotoCounter,
     updatePhotoProgressStatus
+    showCameraPreview
 } from "./ui.js";
 
 import {
@@ -93,6 +94,8 @@ async function startCamera() {
         await waitForCameraMetadata();
 
         await elements.camera.play();
+
+        showCameraPreview();
 
         setCameraReadyControls();
 
