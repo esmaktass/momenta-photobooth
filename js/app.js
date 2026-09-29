@@ -35,7 +35,7 @@ import {
     showCountdownNumber,
     showStripResult,
     updatePhotoCounter,
-    updatePhotoProgressStatus
+    updatePhotoProgressStatus,
     showCameraPreview
 } from "./ui.js";
 
