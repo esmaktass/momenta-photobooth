@@ -41,6 +41,7 @@ export const elements = Object.freeze({
     captureCanvas: getRequiredElement("photo-canvas"),
     stripResult: getRequiredElement("strip-result"),
     stripCanvas: getRequiredElement("strip-canvas"),
+    downloadButton: getRequiredElement("download-strip"),
 
     countdownOverlay: getRequiredElement("countdown-overlay"),
     countdownNumber: getRequiredElement("countdown-number")

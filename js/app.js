@@ -466,6 +466,38 @@ function captureVideoFrame() {
 /* ============================= */
 
 /**
+ * Oluşturulan photo strip'i PNG olarak indirir.
+ *
+ * @returns {void}
+ */
+function downloadPhotoStrip() {
+    elements.stripCanvas.toBlob((blob) => {
+        if (!blob) {
+            setStatus(
+                "Photo strip indirilemedi.",
+                STATUS_TYPE.ERROR
+            );
+
+            return;
+        }
+
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement("a");
+
+        link.href = url;
+        link.download = "momenta-photostrip.png";
+
+        document.body.appendChild(link);
+        link.click();
+        link.remove();
+
+        setTimeout(() => {
+            URL.revokeObjectURL(url);
+        }, 1000);
+    }, "image/png");
+}
+
+/**
  * Yakalanan fotoğrafları dikey bir photo strip
  * tasarımı içinde birleştirir.
  *
@@ -809,6 +841,11 @@ function registerEventListeners() {
     elements.resetButton.addEventListener(
         "click",
         resetSession
+    );
+
+    elements.downloadButton.addEventListener(
+    "click",
+    downloadPhotoStrip
     );
 
     window.addEventListener(
