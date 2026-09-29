@@ -645,3 +645,58 @@ button {
         text-align: center;
     }
 }
+
+/* Download Photo Strip Button */
+.download-button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+
+    padding: 14px 24px;
+
+    background-color: #2f2b27;
+    color: #ffffff;
+
+    border: 1px solid #2f2b27;
+    border-radius: 8px;
+
+    font-family: inherit;
+    font-size: 14px;
+    font-weight: 500;
+    letter-spacing: 0.3px;
+
+    cursor: pointer;
+
+    transition:
+        background-color 0.2s ease,
+        color 0.2s ease,
+        transform 0.2s ease,
+        box-shadow 0.2s ease;
+}
+
+.download-button:hover {
+    background-color: #ffffff;
+    color: #2f2b27;
+
+    box-shadow: 0 4px 12px rgba(47, 43, 39, 0.08);
+    transform: translateY(-2px);
+}
+
+.download-button:active {
+    transform: translateY(0);
+    box-shadow: none;
+}
+
+.download-button:focus-visible {
+    outline: 2px solid #2f2b27;
+    outline-offset: 4px;
+}
+
+/* Generated Photo Strip Layout */
+.strip-result:not([hidden]) {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 16px;
+}
